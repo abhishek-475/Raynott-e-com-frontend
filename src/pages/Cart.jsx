@@ -17,7 +17,8 @@ import {
   FaLock,
   FaStore,
   FaHeart,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaImage
 } from "react-icons/fa";
 
 export default function Cart() {
@@ -36,6 +37,17 @@ export default function Cart() {
 
   const navigate = useNavigate();
   const [localLoading, setLocalLoading] = useState(true);
+
+  // Base64 encoded placeholder image (works without external requests)
+  const getPlaceholderImage = (itemName) => {
+    const base64Placeholder = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Qcm9kdWN0IEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+    return base64Placeholder;
+  };
+
+  const handleImageError = (e, itemName) => {
+    e.target.src = getPlaceholderImage(itemName);
+    e.target.onerror = null; // Prevent infinite loop
+  };
 
   useEffect(() => {
     // Refresh cart on mount to ensure latest data
@@ -223,11 +235,18 @@ export default function Cart() {
                           <div className="flex-shrink-0">
                             <div className="relative">
                               <div className="h-32 w-32 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                                <img
-                                  src={item.image || "https://via.placeholder.com/200"}
-                                  alt={item.name}
-                                  className="h-full w-full object-cover hover:scale-105 transition-transform duration-300"
-                                />
+                                {item.image ? (
+                                  <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="h-full w-full object-cover hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => handleImageError(e, item.name)}
+                                  />
+                                ) : (
+                                  <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                                    <FaImage className="h-8 w-8 text-gray-400" />
+                                  </div>
+                                )}
                               </div>
                               {item.originalPrice && (
                                 <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">

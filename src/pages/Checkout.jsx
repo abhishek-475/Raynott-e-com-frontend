@@ -53,20 +53,16 @@ export default function Checkout() {
     country: "India"
   });
 
-  // Calculate totals
+  // Calculate totals - COD charges for ALL orders
   const shippingFee = cartTotal > 500 ? 0 : 50;
   const tax = cartTotal * 0.18; // 18% GST
-  const codCharges = (paymentMethod === 'cod' && cartTotal < 10000) ? 50 : 0;
+  const codCharges = paymentMethod === 'cod' ? 50 : 0; // ₹50 COD charges for ALL orders
   const grandTotal = cartTotal + shippingFee + tax + codCharges;
 
   // Placeholder image URL that works with HTTPS
   const getPlaceholderImage = (itemName) => {
     // Use a secure placeholder service or base64 encoded image
     const base64Placeholder = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Qcm9kdWN0IEltYWdlPC90ZXh0Pjwvc3ZnPg==";
-    
-    // You can also use a different placeholder service
-    // return `https://placehold.co/200x200/e5e7eb/6b7280?text=${encodeURIComponent(itemName.substring(0, 20))}`;
-    
     return base64Placeholder;
   };
 
@@ -141,12 +137,7 @@ export default function Checkout() {
   };
 
   const handlePaymentSubmit = async () => {
-    // Validate COD eligibility
-    if (paymentMethod === 'cod' && cartTotal > 10000) {
-      toast.error("COD not available for orders above ₹10,000");
-      return;
-    }
-
+    // NO COD validation - COD available for ALL orders
     setLoading(true);
     
     // Prepare order details
@@ -470,20 +461,12 @@ export default function Checkout() {
                     </div>
                   </div>
 
-                  {/* COD Option */}
+                  {/* COD Option - AVAILABLE FOR ALL ORDERS */}
                   <div
-                    onClick={() => {
-                      if (cartTotal <= 10000) {
-                        setPaymentMethod('cod');
-                      } else {
-                        toast.error('COD not available for orders above ₹10,000');
-                      }
-                    }}
+                    onClick={() => setPaymentMethod('cod')}
                     className={`p-6 border-2 rounded-xl cursor-pointer transition-all ${
                       paymentMethod === 'cod'
                         ? 'border-green-500 bg-green-50 shadow-sm'
-                        : cartTotal > 10000
-                        ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
                         : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                     }`}
                   >
@@ -498,19 +481,13 @@ export default function Checkout() {
                           <h3 className="font-bold text-gray-900">Cash on Delivery (COD)</h3>
                           <p className="text-sm text-gray-600 mt-1">Pay when you receive your order</p>
                           <div className="mt-2 text-xs text-gray-600">
-                            <p>• ₹50 extra COD charge will be applied</p>
-                            <p>• Available for orders below ₹10,000</p>
-                            {cartTotal > 10000 && (
-                              <p className="text-red-500 font-medium">Not available for this order</p>
-                            )}
+                            <p>• ₹50 COD charge will be applied</p>
+                            <p>• Available for ALL orders</p>
                           </div>
                         </div>
                       </div>
                       {paymentMethod === 'cod' && (
                         <FaCheckCircle className="h-6 w-6 text-green-500" />
-                      )}
-                      {cartTotal > 10000 && paymentMethod !== 'cod' && (
-                        <FaTag className="h-5 w-5 text-gray-400" />
                       )}
                     </div>
                   </div>
@@ -534,12 +511,12 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                {/* Payment Button */}
+                {/* Payment Button - NO COD RESTRICTION */}
                 <button
                   onClick={handlePaymentSubmit}
-                  disabled={loading || paymentLoading || (paymentMethod === 'cod' && cartTotal > 10000)}
+                  disabled={loading || paymentLoading}
                   className={`w-full py-4 font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 active:scale-[0.99] ${
-                    loading || paymentLoading || (paymentMethod === 'cod' && cartTotal > 10000)
+                    loading || paymentLoading
                       ? 'bg-gray-400 cursor-not-allowed'
                       : paymentMethod === 'razorpay'
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
@@ -715,7 +692,8 @@ export default function Checkout() {
                   <span className="font-medium">₹{tax.toLocaleString('en-IN')}</span>
                 </div>
 
-                {paymentMethod === 'cod' && cartTotal < 10000 && (
+                {/* Always show COD charges when COD is selected */}
+                {paymentMethod === 'cod' && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">COD Charges</span>
                     <span className="font-medium text-red-600">+₹50</span>
@@ -729,7 +707,7 @@ export default function Checkout() {
                       ₹{grandTotal.toLocaleString('en-IN')}
                     </span>
                   </div>
-                  {paymentMethod === 'cod' && cartTotal < 10000 && (
+                  {paymentMethod === 'cod' && (
                     <p className="text-xs text-gray-500 mt-1 text-right">
                       Includes ₹50 COD charges
                     </p>
