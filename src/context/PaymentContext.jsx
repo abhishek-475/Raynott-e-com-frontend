@@ -50,9 +50,10 @@ export const PaymentProvider = ({ children }) => {
       setPaymentLoading(true);
       console.log('Creating Razorpay order:', orderData);
       
-      // Validate amount
-      if (!orderData.amount || orderData.amount < 1) {
-        throw new Error('Invalid amount. Minimum amount is ₹1.');
+      // IMPORTANT: Validate amount in paise (₹1 = 100 paise)
+      if (!orderData.amount || orderData.amount < 100) { // Minimum ₹1 = 100 paise
+        const amountInRupees = (orderData.amount || 0) / 100;
+        throw new Error(`Invalid amount: ₹${amountInRupees.toFixed(2)}. Minimum amount is ₹1.`);
       }
       
       const response = await createPaymentOrder(orderData);
@@ -93,16 +94,41 @@ export const PaymentProvider = ({ children }) => {
     }
   };
 
-  // Process Razorpay payment
+  // Process Razorpay payment - FIXED VERSION
   const processRazorpayPayment = async (orderDetails, userDetails, onSuccess) => {
     try {
       console.log('Starting Razorpay payment process...');
+      console.log('Received orderDetails:', orderDetails);
       
       // Validate order details
       if (!orderDetails || !userDetails) {
         toast.error('Invalid order details');
         return false;
       }
+
+      // Calculate total amount if not provided
+      let totalAmount = orderDetails.totalAmount;
+      
+      // If totalAmount is not provided, calculate it from subtotal, shipping, and tax
+      if (!totalAmount || totalAmount <= 0) {
+        const subtotal = orderDetails.subtotal || 0;
+        const shipping = orderDetails.shipping || 0;
+        const tax = orderDetails.tax || 0;
+        totalAmount = subtotal + shipping + tax;
+        console.log('Calculated totalAmount:', totalAmount);
+      }
+      
+      // Validate that we have a positive amount
+      if (!totalAmount || totalAmount <= 0) {
+        console.error('Invalid total amount:', totalAmount);
+        toast.error('Order amount must be greater than ₹0');
+        return false;
+      }
+      
+      // Convert rupees to paise for Razorpay (₹1 = 100 paise)
+      const amountInPaise = Math.round(totalAmount * 100);
+      console.log('Amount in rupees:', totalAmount);
+      console.log('Amount in paise for Razorpay:', amountInPaise);
 
       // Load Razorpay script if not already loaded
       const scriptLoaded = await loadRazorpayScript();
@@ -111,9 +137,9 @@ export const PaymentProvider = ({ children }) => {
         return false;
       }
 
-      // Create order on backend
+      // Create order on backend - Pass amount in PAISE
       const order = await createRazorpayOrder({
-        amount: orderDetails.totalAmount,
+        amount: amountInPaise, // Send amount in PAISE
         currency: 'INR',
         receipt: `order_${Date.now()}`
       });
@@ -129,10 +155,10 @@ export const PaymentProvider = ({ children }) => {
 
       console.log('Opening Razorpay checkout...');
 
-      // Razorpay options
+      // Razorpay options - amount should already be in paise from order response
       const options = {
         key: razorpayKey,
-        amount: order.amount,
+        amount: order.amount, // This is already in paise from Razorpay API
         currency: order.currency,
         name: 'Raynott E-Com',
         description: `Order #${order.receipt}`,
@@ -219,20 +245,35 @@ export const PaymentProvider = ({ children }) => {
       setPaymentLoading(true);
       console.log('Processing COD order:', orderDetails);
       
+      // Calculate the correct grand total with COD charges
+      const codCharges = 50; // ₹50 COD charges
+      const shippingFee = orderDetails.shipping || 0;
+      const tax = orderDetails.tax || 0;
+      const subtotal = orderDetails.subtotal || 0;
+      const grandTotalWithCOD = subtotal + shippingFee + tax + codCharges;
+      
+      console.log('COD Calculation:', {
+        subtotal,
+        shippingFee,
+        tax,
+        codCharges,
+        grandTotalWithCOD
+      });
+      
       // Call the actual COD API endpoint
       const response = await createCODOrder({
         orderDetails: {
           items: orderDetails.items.map(item => ({
             productId: item.id || item.productId,
             name: item.name,
-            quantity: item.quantity,
-            price: item.price,
+            quantity: item.quantity || 1,
+            price: item.price || 0,
             image: item.image
           })),
-          subtotal: orderDetails.subtotal || cartTotal,
-          shipping: orderDetails.shipping || 0,
-          tax: orderDetails.tax || 0,
-          grandTotal: orderDetails.totalAmount
+          subtotal: subtotal,
+          shipping: shippingFee,
+          tax: tax,
+          grandTotal: grandTotalWithCOD  // Make sure to send the total WITH COD charges
         },
         shippingAddress: userDetails
       });
@@ -251,11 +292,18 @@ export const PaymentProvider = ({ children }) => {
         });
       }
       
-      toast.success('Cash on Delivery order confirmed! You will pay ₹' + orderDetails.totalAmount + ' when you receive your order.');
+      toast.success(`COD order confirmed! You will pay ₹${grandTotalWithCOD.toLocaleString('en-IN')} when you receive your order.`);
       return true;
     } catch (error) {
       console.error('COD processing error:', error);
-      toast.error(error.message || 'Failed to place COD order. Please try again.');
+      
+      // Check if it's the old backend error
+      if (error.message && error.message.includes('COD not available for orders above ₹10,000')) {
+        toast.error('Your backend still has COD restrictions. Please wait for backend updates or contact admin.');
+      } else {
+        toast.error(error.message || 'Failed to place COD order. Please try again.');
+      }
+      
       return false;
     } finally {
       setPaymentLoading(false);

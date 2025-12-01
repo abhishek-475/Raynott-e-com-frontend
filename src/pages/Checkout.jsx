@@ -61,7 +61,6 @@ export default function Checkout() {
 
   // Placeholder image URL that works with HTTPS
   const getPlaceholderImage = (itemName) => {
-    // Use a secure placeholder service or base64 encoded image
     const base64Placeholder = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Qcm9kdWN0IEltYWdlPC90ZXh0Pjwvc3ZnPg==";
     return base64Placeholder;
   };
@@ -140,7 +139,25 @@ export default function Checkout() {
     // NO COD validation - COD available for ALL orders
     setLoading(true);
     
-    // Prepare order details
+    // Calculate subtotal WITHOUT COD charges for backend
+    const subtotal = cartTotal;
+    const shipping = shippingFee;
+    const taxAmount = tax;
+    const codCharges = paymentMethod === 'cod' ? 50 : 0;
+    
+    // Grand total WITH COD charges
+    const grandTotalWithCOD = subtotal + shipping + taxAmount + codCharges;
+    
+    console.log('Payment Data:', {
+      subtotal,
+      shipping,
+      taxAmount,
+      codCharges,
+      grandTotalWithCOD,
+      paymentMethod
+    });
+
+    // Prepare order details - Match backend expected structure
     const orderDetails = {
       items: cartItems.map(item => ({
         id: item.id || item._id,
@@ -150,10 +167,10 @@ export default function Checkout() {
         price: item.price,
         image: item.image
       })),
-      totalAmount: grandTotal,
-      subtotal: cartTotal,
-      shipping: shippingFee,
-      tax: tax,
+      subtotal: subtotal,           // Send subtotal (without COD)
+      shipping: shipping,           // Send shipping fee
+      tax: taxAmount,              // Send tax amount
+      grandTotal: grandTotalWithCOD, // Send grand total WITH COD charges
       paymentMethod: paymentMethod
     };
 
@@ -168,6 +185,11 @@ export default function Checkout() {
       pincode: address.pincode,
       country: address.country
     };
+
+    console.log('Sending to backend:', {
+      orderDetails,
+      shippingAddress
+    });
 
     try {
       const success = await processPayment(orderDetails, shippingAddress, (response) => {
