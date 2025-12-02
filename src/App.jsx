@@ -22,6 +22,15 @@ import Categories from "./pages/Categories";
 import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 
+// Admin Pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminCreateProduct from "./pages/admin/AdminCreateProduct";
+import AdminEditProduct from "./pages/admin/AdminEditProduct";
+
 // Context
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from './context/CartContext';
@@ -30,6 +39,7 @@ import { PaymentProvider } from './context/PaymentContext';
 
 // Protected Route
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
 // React Toastify
 import { ToastContainer } from "react-toastify";
@@ -42,102 +52,166 @@ function App() {
         <CartProvider>
           <WishlistProvider>
             <PaymentProvider>
-            <ScrollToTop />
-            <div className="flex flex-col min-h-screen">
-              
-              {/* Global Navbar */}
-              <Navbar />
+              <ScrollToTop />
+              <div className="flex flex-col min-h-screen">
 
-              {/* Toast Notifications */}
-              <ToastContainer
-                position="top-right"
-                autoClose={2500}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                pauseOnHover
-                draggable
-                theme="light"
-                toastClassName="!rounded-lg"
-                bodyClassName="!font-sans"
-              />
+                {/* Global Navbar */}
+                <Navbar />
 
-              <main className="flex-grow">
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/product/:id" element={<ProductDetails />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/search" element={<SearchResults />} />
-                  <Route path="/category/:category" element={<Categories />} />
+                {/* Toast Notifications */}
+                <ToastContainer
+                  position="top-right"
+                  autoClose={2500}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  pauseOnHover
+                  draggable
+                  theme="light"
+                  toastClassName="!rounded-lg"
+                  bodyClassName="!font-sans"
+                />
 
-                  {/* Protected Routes */}
-                  <Route
-                    path="/checkout"
-                    element={
-                      <ProtectedRoute>
-                        <Checkout />
-                      </ProtectedRoute>
-                    }
-                  />
+                <main className="flex-grow">
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/product/:id" element={<ProductDetails />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/search" element={<SearchResults />} />
+                    <Route path="/category/:category" element={<Categories />} />
 
-                  <Route
-                    path="/my-orders"
-                    element={
-                      <ProtectedRoute>
-                        <MyOrders />
-                      </ProtectedRoute>
-                    }
-                  />
+                    {/* Protected Routes */}
+                    <Route
+                      path="/checkout"
+                      element={
+                        <ProtectedRoute>
+                          <Checkout />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  <Route
-                    path="/order/:id"
-                    element={
-                      <ProtectedRoute>
-                        <OrderDetails />
-                      </ProtectedRoute>
-                    }
-                  />
+                    <Route
+                      path="/my-orders"
+                      element={
+                        <ProtectedRoute>
+                          <MyOrders />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  <Route
-                    path="/wishlist"
-                    element={
-                      <ProtectedRoute>
-                        <Wishlist />
-                      </ProtectedRoute>
-                    }
-                  />
+                    <Route
+                      path="/order/:id"
+                      element={
+                        <ProtectedRoute>
+                          <OrderDetails />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
+                    <Route
+                      path="/wishlist"
+                      element={
+                        <ProtectedRoute>
+                          <Wishlist />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  <Route
-                    path="/profile/:tab"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  {/* 404 Page */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
+                    <Route
+                      path="/profile/:tab"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
 
-              {/* Global Footer */}
-              <Footer />
-            </div>
+                    {/* Admin Routes */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <AdminDashboard />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/products"
+                      element={
+                        <AdminRoute>
+                          <AdminProducts />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/products/create"
+                      element={
+                        <AdminRoute>
+                          <AdminCreateProduct />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/products/edit/:id"
+                      element={
+                        <AdminRoute>
+                          <AdminEditProduct />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/orders"
+                      element={
+                        <AdminRoute>
+                          <AdminOrders />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/users"
+                      element={
+                        <AdminRoute>
+                          <AdminUsers />
+                        </AdminRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/admin/categories"
+                      element={
+                        <AdminRoute>
+                          <AdminCategories />
+                        </AdminRoute>
+                      }
+                    />
+
+                    {/* 404 Page */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+
+                {/* Global Footer */}
+                <Footer />
+              </div>
             </PaymentProvider>
           </WishlistProvider>
         </CartProvider>

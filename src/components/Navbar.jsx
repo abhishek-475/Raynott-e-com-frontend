@@ -3,11 +3,11 @@ import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
-import { 
-  FaUser, 
-  FaShoppingCart, 
-  FaHeart, 
-  FaSearch, 
+import {
+  FaUser,
+  FaShoppingCart,
+  FaHeart,
+  FaSearch,
   FaChevronDown,
   FaStore,
   FaCog,
@@ -21,7 +21,7 @@ export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const { cartCount, refreshCart } = useContext(CartContext);
   const { wishlistCount, refreshWishlist } = useContext(WishlistContext);
-  
+
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -45,7 +45,7 @@ export default function Navbar() {
 
     window.addEventListener('cart-state-changed', handleCartChange);
     window.addEventListener('wishlist-state-changed', handleWishlistChange);
-    
+
     return () => {
       window.removeEventListener('cart-state-changed', handleCartChange);
       window.removeEventListener('wishlist-state-changed', handleWishlistChange);
@@ -84,7 +84,7 @@ export default function Navbar() {
 
   return (
     <>
-   
+
 
       {/* Main Navbar */}
       <nav className="sticky top-0 z-50 bg-white shadow-lg">
@@ -126,8 +126,8 @@ export default function Navbar() {
             {/* Right Side Actions */}
             <div className="flex items-center space-x-6">
               {/* Wishlist */}
-              <Link 
-                to="/wishlist" 
+              <Link
+                to="/wishlist"
                 className="hidden md:flex flex-col items-center text-gray-700 hover:text-purple-600 transition-colors relative"
               >
                 <FaHeart className="h-5 w-5" />
@@ -140,8 +140,8 @@ export default function Navbar() {
               </Link>
 
               {/* Cart */}
-              <Link 
-                to="/cart" 
+              <Link
+                to="/cart"
                 className="hidden md:flex flex-col items-center text-gray-700 hover:text-purple-600 transition-colors relative"
               >
                 <FaShoppingCart className="h-5 w-5" />
@@ -174,7 +174,7 @@ export default function Navbar() {
                         <p className="font-semibold text-gray-800">{displayUser.name}</p>
                         <p className="text-sm text-gray-500">{displayUser.email}</p>
                       </div>
-                      
+
                       <Link
                         to="/profile"
                         className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
@@ -183,7 +183,7 @@ export default function Navbar() {
                         <FaUser className="h-4 w-4 mr-3" />
                         My Profile
                       </Link>
-                      
+
                       <Link
                         to="/my-orders"
                         className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
@@ -192,7 +192,7 @@ export default function Navbar() {
                         <FaShoppingBag className="h-4 w-4 mr-3" />
                         My Orders
                       </Link>
-                      
+
                       <Link
                         to="/wishlist"
                         className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
@@ -206,10 +206,10 @@ export default function Navbar() {
                           </span>
                         )}
                       </Link>
-                      
+
                       {displayUser.role === 'admin' && (
                         <Link
-                          to="/admin/dashboard"
+                          to="/admin"
                           className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >
@@ -217,7 +217,7 @@ export default function Navbar() {
                           Admin Dashboard
                         </Link>
                       )}
-                      
+
                       <button
                         onClick={handleLogout}
                         className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-gray-50 hover:text-red-700 transition-colors"
@@ -324,7 +324,7 @@ export default function Navbar() {
                     </Link>
                     {displayUser.role === 'admin' && (
                       <Link
-                        to="/admin/dashboard"
+                        to="/admin"
                         className="flex items-center py-2 text-gray-700 hover:text-blue-600 transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >

@@ -15,16 +15,19 @@ export const getProductById = async (id) => {
 // SEARCH products with filters
 export const searchProducts = async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.query) queryParams.append('q', params.query);
     if (params.category) queryParams.append('category', params.category);
     if (params.minPrice) queryParams.append('minPrice', params.minPrice);
     if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
     if (params.sort) queryParams.append('sort', params.sort);
-    
+    if (params.status) queryParams.append('status', params.status);
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+
     const queryString = queryParams.toString();
     const url = `/products/search${queryString ? `?${queryString}` : ''}`;
-    
+
     const res = await api.get(url);
     return res.data;
 };
